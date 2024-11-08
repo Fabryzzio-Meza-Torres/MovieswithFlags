@@ -1,11 +1,12 @@
 import unittest
 from unittest.mock import patch, Mock
+import json
 from app import app, getmoviedetails, get_country_flag
 
 class MovieWithFlagAppTestCase(unittest.TestCase):
 
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls):    
         # Set up a Flask test client for the entire test class
         cls.client = app.test_client()
         app.config['TESTING'] = True
@@ -26,12 +27,12 @@ class MovieWithFlagAppTestCase(unittest.TestCase):
     @patch("app.searchfilms")
     @patch("app.getmoviedetails")
     def test_movie_flag_get(self, mock_getmoviedetails, mock_searchfilms):
-        mock_getmoviedetails.return_value = {
+        mock_getmoviedetails.return_value =json.dumps( {
             "Title": "Superman II",
             "Year": "1980",
             "Country": "United States, United Kingdom, Canada, France",
-        }
-        mock_searchfilms.return_value = {
+        })
+        mock_searchfilms.return_value = json.dumps({
             "Search": [
                 {
                 "Title": "Superman II",
@@ -39,7 +40,7 @@ class MovieWithFlagAppTestCase(unittest.TestCase):
                 "imdbID": "tt0081573"
                 }
             ]
-        }
+        })
 
         response = self.client.get("/api/movies?filter=superman")
         self.assertEqual(response.status_code, 200)
@@ -64,11 +65,11 @@ class MovieWithFlagAppTestCase(unittest.TestCase):
     @patch("app.get_country_flag")
     @patch("app.getmoviedetails")
     def test_movie_searchapi(self, mock_getmoviedetails, mock_get_country_flag):
-        mock_getmoviedetails.return_value = {
+        mock_getmoviedetails.return_value =json.dumps( {
             "Title": "Superman II",
             "Year": "1980",
             "Country": "United States, United Kingdom, Canada, France",
-        }
+        })
         mock_get_country_flag.return_value = "https://flagcdn.com/us.svg"
 
         response = self.client.get("/api/movies?filter=superman")

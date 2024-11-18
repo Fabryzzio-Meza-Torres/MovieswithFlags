@@ -56,11 +56,17 @@ def GetMovieDetailsCache(imdbID):
             return None
         movie_details=movie_details_json
         try:
-            cursor.execute("INSERT INTO Movie(imdbID,title,year) VALUES(?,?,?)",(imdbID,movie_details["Title"],movie_details["Year"]))
-            countries_names=movie_details.get("Country","").split(", ")
+            cursor.execute("INSERT INTO Movie (imdbID, title, year) VALUES (?, ?, ?)",
+                           (imdbID, movie_details["Title"], movie_details["Year"]))
+            conn.commit()
+            countries_names = movie_details.get("Country", "").split(", ")
             for country_name in countries_names:
-                cursor.execute("INSERT  OR IGNORE INTO Country(name) VALUES(?)",(country_name,))
-                cursor.execute("INSERT OR IGNORE INTO MovieCountry(movie_id,country_name) VALUES(?,?)",(imdbID,country_name))
+                flag_url = getCountryFlagCached(country_name)
+                cursor.execute("INSERT OR IGNORE INTO Country (name,flag_url) VALUES (?,?)", (country_name,flag_url))
+                conn.commit()
+                cursor.execute("INSERT OR IGNORE INTO MovieCountry (movie_id, country_name) VALUES (?, ?)",
+                               (imdbID, country_name))
+                conn.commit()
 
         except sqlite3.Error as e:
             conn.rollback()
@@ -71,27 +77,31 @@ def GetMovieDetailsCache(imdbID):
         return movie_details
 
 def getCountryFlagCached(country_name):
-    conn=sqlite3.connect('cache.db')
-    cursor=conn.cursor()
-    cursor.execute("SELECT flag_url FROM Country WHERE name=?", (country_name,))
-    country=cursor.fetchone()
+    conn = sqlite3.connect('cache.db')
+    cursor = conn.cursor()
 
-    if country and country[0]:
-        conn.close()
-        return country[0]
-    else:
-        flag_url=get_country_flag(country_name)
-        if flag_url:
-            try:
-                cursor.execute("INSERT OR IGNORE INTO Country(name,flag_url) VALUES(?,?)",(country_name,flag_url))
-                conn.commit()
-            except sqlite3.Error as e:
-                conn.rollback()
-                print("Transaction failed:",e)
-            finally:
-                conn.close()
-        return flag_url
+    try:
+        cursor.execute("SELECT flag_url FROM Country WHERE name=?", (country_name,))
+        country = cursor.fetchone()
+
+        if country and country[0]:
+            return country[0]
         
+        flag_url = get_country_flag(country_name)
+        if flag_url:
+            cursor.execute("INSERT OR IGNORE INTO Country(name, flag_url) VALUES(?, ?)", (country_name, flag_url))
+            conn.commit()
+        
+        return flag_url
+
+    except sqlite3.Error as e:
+        conn.rollback()
+        print("Transaction failed:", e)
+        return None
+
+    finally:
+        conn.close()
+
 
 
 

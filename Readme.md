@@ -50,3 +50,8 @@ python run_stress_test.py heavy
 - Interfaz responsiva y moderna
 - Indicador de carga durante búsquedas
 
+## Integrantes
+
+- Fabryzzio Jossue Meza Torres
+- Aaron Cesar Aldair Navarro Mendoza
+

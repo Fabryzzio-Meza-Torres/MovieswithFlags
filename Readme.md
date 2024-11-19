@@ -11,8 +11,8 @@ Una aplicación web que muestra películas junto con las banderas de sus países
 
 1. Clonar el repositorio
 ```bash
-git clone <url-del-repositorio>
-cd <nombre-del-directorio>
+git clone https://github.com/Fabryzzio-Meza-Torres/MovieswithFlags.git
+cd MovieswithFlags
 
 # Dependencias
 
@@ -31,6 +31,7 @@ source venv/bin/activate
 ```bash
 python app.py
 ```
+Ahora puedes abrir en el navegador: http://127.0.0.1:5000/
 
 ## Prueba de Stress 🤯
 ```bash

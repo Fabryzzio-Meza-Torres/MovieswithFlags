@@ -262,13 +262,13 @@
                     <h2 class="movie-title">{{ movie.title }}</h2>
                     <span class="movie-year">Year: {{ movie.year }}</span>
                     <div class="countries-container">
-                        {% for country_group in movie.countries %}
-                            {% for country_data in country_group.flag %}
-                                <span class="country-tag">
-                                    {{ country_data.name }}
-                                    <img src="{{ country_data.flag_url }}" alt="Flag of {{ country_data.name }}">
-                                </span>
-                            {% endfor %}
+                        {% for country in movie.countries %}
+                            <span class="country-tag">
+                                {{ country.name }}
+                                <img src="{{ country.flag_url }}" 
+                                     alt="Flag of {{ country.name }}"
+                                     onerror="this.style.display='none'">
+                            </span>
                         {% endfor %}
                     </div>
                 </div>

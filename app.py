@@ -171,7 +171,6 @@ def merge_data_with_flags(filter_text, page=1):
         total_results = int(filmssearch_json.get("totalResults", 0))
         moviesdetailswithflags = []
 
-        # Limitar el número de workers para evitar sobrecarga
         with ThreadPoolExecutor(max_workers=5) as executor:
             future_movies = [
                 executor.submit(GetMovieDetailsCache, movie["imdbID"]) 
@@ -184,15 +183,23 @@ def merge_data_with_flags(filter_text, page=1):
                     if not moviedetails:
                         continue
 
-                    countries = []
+                    # Simplificar la estructura de países y banderas
+                    countries_list = []
                     if moviedetails.get("Country"):
                         country_names = [c.strip() for c in moviedetails["Country"].split(",")]
-                        countries = [{"name": c, "flag": getCountryFlagCached(c)} for c in country_names if c]
+                        for country_name in country_names:
+                            if country_name:
+                                flag_data = getCountryFlagCached(country_name)
+                                if flag_data and flag_data.get('flag_url'):
+                                    countries_list.append({
+                                        "name": country_name,
+                                        "flag_url": flag_data['flag_url']
+                                    })
 
                     movie_with_flags = {
                         "title": moviedetails["Title"],
                         "year": moviedetails["Year"],
-                        "countries": [{"name": c, "flag": f} for c, f in zip(country_names, countries) if f]
+                        "countries": countries_list
                     }
                     moviesdetailswithflags.append(movie_with_flags)
                 except Exception as e:
@@ -253,6 +260,7 @@ def index():
     results = merge_data_with_flags(filter, page)
     total_pages = (results["total"] + 9) // 10  # 10 resultados por página
     
+    print(results["movies"])
     return render_template("index.html", 
                          movies=results["movies"],
                          current_page=page,
